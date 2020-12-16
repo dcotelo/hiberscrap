@@ -42,8 +42,8 @@ type HibernateMapping struct {
 
 func main() {
 
-	FilePath := flag.String("folder", "foo", "base project folder")
-	Verbose := flag.Bool("v", false, "Display each file location")
+	FilePath := flag.String("dir", "", "Base project folder")
+	Verbose := flag.Bool("v", false, "Display each hibernate file location inside the table")
 	flag.Parse()
 
 	files, _ := WalkMatch(*FilePath, "*.xml")
