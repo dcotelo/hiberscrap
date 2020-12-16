@@ -18,10 +18,11 @@ type HibernateMapping struct {
 	XMLName xml.Name `xml:"hibernate-mapping"`
 	Text    string   `xml:",chardata"`
 	Class   struct {
-		Text  string `xml:",chardata"`
-		Name  string `xml:"name,attr"`
-		Table string `xml:"table,attr"`
-		ID    struct {
+		Text    string `xml:",chardata"`
+		Name    string `xml:"name,attr"`
+		Table   string `xml:"table,attr"`
+		Mutable string `xml:"mutable,attr"`
+		ID      struct {
 			Text         string `xml:",chardata"`
 			Name         string `xml:"name,attr"`
 			UnsavedValue string `xml:"unsaved-value,attr"`
@@ -54,9 +55,9 @@ func main() {
 	})
 	//if verbose show column
 	if *Verbose == true {
-		t.SetHeader([]string{"Class", "Table", "File"})
+		t.SetHeader([]string{"Class", "Table", "Access", "File"})
 	} else {
-		t.SetHeader([]string{"Class", "Table"})
+		t.SetHeader([]string{"Class", "Table", "Access"})
 	}
 
 	for _, file := range files {
@@ -76,15 +77,23 @@ func main() {
 			fmt.Printf("error: %v", err2)
 			return
 		}
+		//check if xml has a valid class
 		if hiber.Class.Name != "" {
-			//fmt.Println("File:", FilePath)
+
+			//parse boolean including default logic
+			Mutable := ""
+			if hiber.Class.Mutable == "" || hiber.Class.Mutable != "true" {
+				Mutable = "Read/Write"
+			} else {
+				Mutable = "Read"
+			}
 
 			if *Verbose == true {
 				res := strings.ReplaceAll(file, *FilePath, "")
-				t.AddRow([]string{hiber.Class.Name, hiber.Class.Table, res})
+				t.AddRow([]string{hiber.Class.Name, hiber.Class.Table, Mutable, res})
 
 			} else {
-				t.AddRow([]string{hiber.Class.Name, hiber.Class.Table})
+				t.AddRow([]string{hiber.Class.Name, hiber.Class.Table, Mutable})
 			}
 
 		}
@@ -138,6 +147,7 @@ func ShowInfo(FilePath string) {
 		//fmt.Println("File:", FilePath)
 		fmt.Print(hiber.Class.Name + " ")
 		fmt.Print(hiber.Class.Table + "\n")
+
 	}
 
 }
