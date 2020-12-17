@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/xml"
 	"flag"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/stevedomin/termtable"
@@ -43,11 +45,22 @@ type HibernateMapping struct {
 
 func main() {
 
-	FilePath := flag.String("dir", "", "Base project folder")
+	FilePath := flag.String("d", "/var/foo", "Base project directory")
 	Verbose := flag.Bool("v", false, "Display each hibernate file location inside the table")
+	Usage := flag.Bool("u", false, "Display each class usage across the project")
 	flag.Parse()
 
 	files, _ := WalkMatch(*FilePath, "*.xml")
+
+	filesJava, _ := WalkMatch(*FilePath, "*.java")
+	/*
+		for _, file := range filesJava {
+
+			lines, _ := SearchImport(file, "import")
+			for _, line := range lines {
+				println(line[0] + line[1])
+			}
+		} */
 
 	t := termtable.NewTable(nil, &termtable.TableOptions{
 		Padding:      3,
@@ -94,6 +107,28 @@ func main() {
 
 			} else {
 				t.AddRow([]string{hiber.Class.Name, hiber.Class.Table, Mutable})
+
+			}
+
+			if *Usage == true {
+				for _, jfile := range filesJava {
+					//fmt.Println(file)
+					lines, _ := SearchImport(jfile, "import "+hiber.Class.Name)
+
+					for _, line := range lines {
+						relPath := strings.ReplaceAll(line[1], *FilePath, "")
+						//println(line[0] + line[1])
+
+						if *Verbose == true {
+
+							t.AddRow([]string{" |--" + relPath + ":" + line[0], "", "", ""})
+
+						} else {
+							t.AddRow([]string{" |--" + relPath + ":" + line[0], "", ""})
+
+						}
+					}
+				}
 			}
 
 		}
@@ -150,4 +185,36 @@ func ShowInfo(FilePath string) {
 
 	}
 
+}
+
+//SearchImport check for imported class
+func SearchImport(path, searchText string) ([][]string, error) {
+	var lines [][]string
+	f, err := os.Open(path)
+	if err != nil {
+		return lines, err
+	}
+	defer f.Close()
+
+	// Splits on newlines by default.
+	scanner := bufio.NewScanner(f)
+	var line int
+	line = 1
+	// https://golang.org/pkg/bufio/#Scanner.Scan
+	for scanner.Scan() {
+		if strings.Contains(scanner.Text(), searchText) {
+			//		fmt.Println(line)
+			founds := []string{strconv.Itoa(line), path}
+			lines = append(lines, founds)
+
+		}
+
+		line++
+	}
+
+	if err := scanner.Err(); err != nil {
+		// Handle the error
+		return lines, err
+	}
+	return lines, err
 }
