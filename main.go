@@ -95,7 +95,7 @@ func main() {
 
 			//parse boolean including default logic
 			Mutable := ""
-			if hiber.Class.Mutable == "" || hiber.Class.Mutable != "true" {
+			if hiber.Class.Mutable == "" || hiber.Class.Mutable == "true" {
 				Mutable = "Read/Write"
 			} else {
 				Mutable = "Read"
