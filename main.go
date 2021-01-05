@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/common-nighthawk/go-figure"
 	"github.com/stevedomin/termtable"
 )
 
@@ -44,10 +45,13 @@ type HibernateMapping struct {
 }
 
 func main() {
+	//asci art
+	Title := figure.NewFigure("Hiberscrap", "", true)
+	Title.Print()
 
 	FilePath := flag.String("d", "/var/foo", "Base project directory")
-	Verbose := flag.Bool("v", false, "Display each hibernate file location inside the table")
-	Usage := flag.Bool("u", false, "Display each class usage across the project")
+	Verbose := flag.Bool("v", false, "Display each hibernate file location inside the table -default:false")
+	Usage := flag.Bool("u", false, "Display each class usage across the project -default:false")
 	flag.Parse()
 
 	//check mandatory -d flag
