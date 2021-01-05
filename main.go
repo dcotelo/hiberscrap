@@ -50,17 +50,21 @@ func main() {
 	Usage := flag.Bool("u", false, "Display each class usage across the project")
 	flag.Parse()
 
+	//check mandatory -d flag
+	required := []string{"d"}
+	seen := make(map[string]bool)
+	flag.Visit(func(f *flag.Flag) { seen[f.Name] = true })
+	for _, req := range required {
+		if !seen[req] {
+			// or possibly use `log.Fatalf` instead of:
+			fmt.Fprintf(os.Stderr, "missing required -%s argument\n", req)
+			os.Exit(2) // the same exit code flag.Parse uses
+		}
+	}
+
 	files, _ := WalkMatch(*FilePath, "*.xml")
 
 	filesJava, _ := WalkMatch(*FilePath, "*.java")
-	/*
-		for _, file := range filesJava {
-
-			lines, _ := SearchImport(file, "import")
-			for _, line := range lines {
-				println(line[0] + line[1])
-			}
-		} */
 
 	t := termtable.NewTable(nil, &termtable.TableOptions{
 		Padding:      3,
